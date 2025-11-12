@@ -30,10 +30,18 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'role' => 'researcher', // Assign researcher role by default
         ]);
+
+        // Auto-create researcher profile
+        $user->researcherProfile()->create([
+            'slug' => \Illuminate\Support\Str::slug($user->name),
+        ]);
+
+        return $user;
     }
 }

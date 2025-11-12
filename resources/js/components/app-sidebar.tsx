@@ -11,18 +11,18 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { type NavItem, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    FileText,
+    Folder,
+    LayoutGrid,
+    Settings,
+    Users,
+} from 'lucide-react';
+import { useMemo } from 'react';
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
 
 const footerNavItems: NavItem[] = [
     {
@@ -38,6 +38,61 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<SharedData>().props;
+    const user = auth.user;
+
+    // Determine navigation items based on role
+    const mainNavItems: NavItem[] = useMemo(() => {
+        const baseItems: NavItem[] = [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+        ];
+
+        // Admin-specific navigation items
+        if (user?.role === 'admin') {
+            return [
+                ...baseItems,
+                {
+                    title: 'Users',
+                    href: '/admin/users',
+                    icon: Users,
+                },
+                {
+                    title: 'Papers',
+                    href: '/admin/papers',
+                    icon: FileText,
+                },
+                {
+                    title: 'Settings',
+                    href: '/admin/settings',
+                    icon: Settings,
+                },
+            ];
+        }
+
+        // Researcher-specific navigation items
+        if (user?.role === 'researcher') {
+            return [
+                ...baseItems,
+                {
+                    title: 'My Papers',
+                    href: '/researcher/papers',
+                    icon: FileText,
+                },
+                {
+                    title: 'Browse Papers',
+                    href: '/papers',
+                    icon: BookOpen,
+                },
+            ];
+        }
+
+        return baseItems;
+    }, [user?.role]);
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
